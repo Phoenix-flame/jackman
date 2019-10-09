@@ -1,3 +1,5 @@
+# Uninformed search algorithm
+
 from threading import Thread
 
 class BFS(Thread):
