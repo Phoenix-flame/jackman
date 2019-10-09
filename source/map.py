@@ -20,7 +20,7 @@ class Map:
         for i, line in enumerate(lines):
             line = line.strip()
             for j, cell in enumerate(line):
-                self.map[(i, j)] = Cell(i, j, cell)
+                self.map[(j, i)] = Cell(j, i, cell)
 
 
 
@@ -56,7 +56,8 @@ class Map:
         for d in Direction:
             nextCell = self.getNextCell(curCell, d)
             if nextCell is not None:
-                result.append(nextCell)
+                if nextCell.getType() is not '%':
+                    result.append(nextCell)
         return result
 
 
