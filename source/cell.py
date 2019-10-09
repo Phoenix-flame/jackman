@@ -1,30 +1,39 @@
-import enum
+from enum import Enum
 
-class CellType(enum.Enum):
-    WALL = 1
-    PLAYER1 = 2
-    PLAYER2 = 3
-    FOOD1 = 4
-    FOOD2 = 5
-    FOOD3 = 6
-    EMPTY = -1
+
+class Player(Enum):
+    P = 1
+    Q = 2
 
 
 class Cell:
-    def __init__(self, x, y, cellType=CellType.EMPTY):
+    def __init__(self, x, y, cellType='%', free=True):
         self.x = x
         self.y = y
         self.cellType = cellType
-
-    def generateNeighbors(self):
-        pass
-
-    def getNeighbors(self):
-        pass
+        self.free = free
 
     def changeType(self, newType):
-        if self.cellType == CellType.WALL or self.cellType == CellType.PLAYER1 or self.cellType == CellType.PLAYER2:
-            return
         self.cellType = newType
+
+    def getType(self):
+        return self.cellType
+
+    def isFree(self, player=None):
+        if player is None:
+            return self.free
+        if player == Player.P:
+            if self.cellType == 'Q':
+                return False
+            return True
+        if player == Player.Q:
+            if self.cellType == 'P':
+                return False
+            return True
+
+    def __str__(self):
+        return "[" + str(self.x) + ", " + str(self.y) + ", " + self.cellType + "]"
+
+
 
 
