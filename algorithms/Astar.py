@@ -16,10 +16,21 @@ class Astar(Thread):
         print("Let's rock")
         frontier = {}
         visited = []
-        path = []
+        path = {}
         g_val = 0
         frontier[self.EuclideanDist(self.startPoint, self.target)] = self.startPoint
         self._astar(self.startPoint, frontier, visited, path, self.target, g_val)
+
+        res = [self.target]
+        parent = path[self.target]
+        while parent != self.startPoint:
+            res.append(parent)
+            cur = parent
+            parent = path[cur]
+        res.append(parent)
+
+        for i in res:
+            print(i)
         print("ok")
 
     def _astar(self, curNode, frontier, visited, path, target, g_val):
@@ -37,7 +48,7 @@ class Astar(Thread):
         for child in children:
             if child not in visited:
                 visited.append(child)
-                print(g_val + self.EuclideanDist(child, target))
+                path[child] = curNode
                 frontier[g_val + self.EuclideanDist(child, target)] = child
 
 
