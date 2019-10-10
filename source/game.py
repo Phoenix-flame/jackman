@@ -1,6 +1,7 @@
 from source.map import *
 from source.graphics import *
 from algorithms.BFS import *
+from algorithms.Astar import *
 
 
 class Game(Thread):
@@ -8,7 +9,7 @@ class Game(Thread):
         super().__init__()
         self.map = Map("testcases/test2")
         self.screen = _screen
-        self.startPoint = self.map.getCell(3, 4)
+        self.startPoint = self.map.getCell(4, 3)
         print(self.startPoint)
         self.graphics = Graphics(_screen, {'col': 6, 'row': 10})
         self.__stopped = False
@@ -30,7 +31,7 @@ class Game(Thread):
     def loop(self):
         if not self.started_algorithm:
             self.started_algorithm = True
-            BFS(self.map, self.startPoint).start()
+            Astar(self.map, self.startPoint, self.map.getCell(1, 8)).start()
 
     def draw(self):
         self.graphics.drawBoard()

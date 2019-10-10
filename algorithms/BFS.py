@@ -17,14 +17,14 @@ class BFS(Thread):
 
     def _bfs(self, curNode, visited, frontier, test):
         if curNode.getType() == 'Q':
-            curNode.changeType(' ')
+            curNode.changeType('*')
             return True
 
         visited.append(curNode)
         if curNode.getType() is not 'P':
             curNode.changeType('*')
 
-        time.sleep(0.005)
+        time.sleep(0.05)
         children = self.map.getAdjacents(curNode)
         # print(childs)
 
