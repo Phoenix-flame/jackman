@@ -11,6 +11,8 @@ class Map:
     def __init__(self, _dir):
         self.map_dir = _dir
         self.map = {}
+        self.cols = 0
+        self.rows = 0
         self.createMap()
 
     def createMap(self):
@@ -18,7 +20,9 @@ class Map:
             lines = map_file.readlines()
 
         for i, line in enumerate(lines):
+            self.rows += 1
             line = line.strip()
+            self.cols = len(line)
             for j, cell in enumerate(line):
                 self.map[(j, i)] = Cell(j, i, cell)
 

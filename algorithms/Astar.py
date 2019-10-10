@@ -18,7 +18,7 @@ class Astar(Thread):
         visited = []
         path = {}
         g_val = 0
-        frontier[self.EuclideanDist(self.startPoint, self.target)] = self.startPoint
+        frontier[self.startPoint] = self.EuclideanDist(self.startPoint, self.target)
         self._astar(self.startPoint, frontier, visited, path, self.target, g_val)
 
         res = [self.target]
@@ -30,18 +30,19 @@ class Astar(Thread):
         res.append(parent)
 
         for i in res:
+            i.changeType('2')
             print(i)
-        print("ok")
+        print("Done")
 
     def _astar(self, curNode, frontier, visited, path, target, g_val):
+        g_val_tmp = g_val
         if len(frontier) == 0:
             return False
         if curNode == target:
             print(curNode)
             return True
-
-
-        time.sleep(0.5)
+        #
+        time.sleep(0.01)
 
         visited.append(curNode)
         children = self.map.getAdjacents(curNode)
@@ -49,22 +50,22 @@ class Astar(Thread):
             if child not in visited:
                 visited.append(child)
                 path[child] = curNode
-                frontier[g_val + self.EuclideanDist(child, target)] = child
+                frontier[child] = g_val_tmp + self.EuclideanDist(child, target)
 
+        print(frontier.values())
 
-        g_val += 1
-
-
-        node = frontier[min(frontier.keys())]
-        del frontier[min(frontier.keys())]
+        node = list(frontier.keys())[list(frontier.values()).index(min(frontier.values()))]
+        print("g:", g_val, "h:", self.EuclideanDist(node, target), node)
+        del frontier[node]
         node.changeType('*')
+        g_val += 10
         return self._astar(node, frontier, visited, path, target, g_val)
 
 
 
     @staticmethod
     def EuclideanDist(p1, p2):
-        return np.sqrt(np.power(p1.x - p2.x, 2) + np.power(p1.y - p2.y, 2)) * 10
+        return np.sqrt(np.power(p1.x - p2.x, 2) + np.power(p1.y - p2.y, 2))
 
     @staticmethod
     def ManhatanDist(p1, p2):

@@ -7,8 +7,12 @@ class IDS(Thread):
         super().__init__()
 
     def run(self):
-        pass
+        frontier = []
+        visited = []
 
     def _ids(self):
         pass
 
+
+    def _dfs(self):
+        pass
