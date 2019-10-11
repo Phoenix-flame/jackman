@@ -8,7 +8,7 @@ from algorithms.IDS import *
 class Game(Thread):
     def __init__(self, _screen):
         super().__init__()
-        self.map = Map("testcases/my_test2")
+        self.map = Map("testcases/test4")
         self.graphics = Graphics(_screen, {'col': self.map.cols, 'row': self.map.rows})
         self.__stopped = False
         self.started_algorithm = False

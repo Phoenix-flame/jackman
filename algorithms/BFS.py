@@ -3,6 +3,7 @@
 from threading import Thread
 import time
 from source.state import *
+from tabulate import tabulate
 
 class BFS(Thread):
     def __init__(self, _map, _start, _target):
@@ -29,7 +30,6 @@ class BFS(Thread):
         path = {}
         frontier.append(State(self.startPoint, None, 0))
         if self._bfs(visited, frontier, path, self.target):
-            self.show_performance()
             res = [self.target]
             parent = path[self.target]
             while parent != self.startPoint:
@@ -43,10 +43,11 @@ class BFS(Thread):
             print("Done")
             self.res = res
         else:
-            self.show_performance()
+
             print("There is no path :(")
+
         toc = time.time()
-        print("Elapsed time:", toc - tic, 's')
+        self.show_performance(toc - tic)
 
 
     def _bfs(self, visited, frontier, path, target):
@@ -83,8 +84,12 @@ class BFS(Thread):
         return self._bfs(visited, frontier, path, target)
 
 
-    def show_performance(self):
-        print('Nodes expanded:', self.nodes_expanded)
-        print('Max search depth:', self.max_search_depth)
-        print('Search depth:', self.search_depth)
+    def show_performance(self, _time):
+        print(tabulate([['Nodes expanded', self.nodes_expanded],
+                        ['Max search depth', self.max_search_depth],
+                        ['Search depth', self.search_depth],
+                        ['Time', _time]], headers=['Parameter', 'Value']))
+        # print('Nodes expanded:', self.nodes_expanded)
+        # print('Max search depth:', self.max_search_depth)
+        # print('Search depth:', self.search_depth)
 
