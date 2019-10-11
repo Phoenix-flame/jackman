@@ -2,6 +2,7 @@
 
 from threading import Thread
 import numpy as np
+import operator
 import time
 
 class Astar(Thread):
@@ -14,52 +15,63 @@ class Astar(Thread):
 
     def run(self):
         print("Let's rock")
-        frontier = {}
+        frontier = []
         visited = []
         path = {}
         g_val = 0
-        frontier[self.startPoint] = self.EuclideanDist(self.startPoint, self.target)
-        self._astar(self.startPoint, frontier, visited, path, self.target, g_val)
+        self.startPoint.f = self.EuclideanDist(self.startPoint, self.target)
+        self.startPoint.h = self.startPoint.f
 
-        res = [self.target]
-        parent = path[self.target]
-        while parent != self.startPoint:
+        frontier.append(self.startPoint)
+        if self._astar(self.startPoint, frontier, visited, path, self.target, g_val):
+
+            res = [self.target]
+            parent = path[self.target]
+            while parent != self.startPoint:
+                res.append(parent)
+                cur = parent
+                parent = path[cur]
             res.append(parent)
-            cur = parent
-            parent = path[cur]
-        res.append(parent)
 
-        for i in res:
-            i.changeType('2')
-            print(i)
-        print("Done")
+            for i in res:
+                if i.cellType == '*':
+                    i.changeType('Q')
+                # print(i)
+            print("Done")
+        else:
+            print("There is no path :(")
 
     def _astar(self, curNode, frontier, visited, path, target, g_val):
-        g_val_tmp = g_val
-        if len(frontier) == 0:
-            return False
         if curNode == target:
-            print(curNode)
             return True
-        #
+
         time.sleep(0.01)
 
         visited.append(curNode)
-        children = self.map.getAdjacents(curNode)
+        if curNode.cellType == ' ':
+            curNode.changeType('*')
+
+
+        children = self.map.getAdjacents(curNode, 'P')
         for child in children:
             if child not in visited:
                 visited.append(child)
                 path[child] = curNode
-                frontier[child] = g_val_tmp + self.EuclideanDist(child, target)
+                child.f = g_val + (self.EuclideanDist(child, target))
+                child.g = g_val
+                child.h = self.EuclideanDist(child, target)
+                frontier.append(child)
 
-        print(frontier.values())
+        if len(frontier) == 0:
+            return False
 
-        node = list(frontier.keys())[list(frontier.values()).index(min(frontier.values()))]
-        print("g:", g_val, "h:", self.EuclideanDist(node, target), node)
-        del frontier[node]
-        node.changeType('*')
+        frontier = sorted(frontier, key=operator.attrgetter('f'))
         g_val += 10
+
+        node = frontier[0]
+        del frontier[0]
         return self._astar(node, frontier, visited, path, target, g_val)
+
 
 
 

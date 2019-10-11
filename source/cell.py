@@ -13,11 +13,18 @@ class Cell:
         self.cellType = cellType
         self.free = free
 
+        self.f = 0
+        self.g = 0
+        self.h = 0
+
     def changeType(self, newType):
         self.cellType = newType
 
     def getType(self):
         return self.cellType
+
+    def getKey(self):
+        return self.x, self.y
 
     def isFree(self, player=None):
         if player is None:
@@ -33,7 +40,6 @@ class Cell:
 
     def __str__(self):
         return "[" + str(self.x) + ", " + str(self.y) + ", " + self.cellType + "]"
-
 
 
 

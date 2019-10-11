@@ -2,6 +2,7 @@ from source.map import *
 from source.graphics import *
 from algorithms.BFS import *
 from algorithms.Astar import *
+from algorithms.IDS import *
 
 
 class Game(Thread):
@@ -28,7 +29,7 @@ class Game(Thread):
     def loop(self):
         if not self.started_algorithm:
             self.started_algorithm = True
-            Astar(self.map, self.map.getCell(10, 1), self.map.getCell(3, 3)).start()
+            IDS(self.map, self.map.getCell(self.map.p), self.map.getCell(self.map.food1[0])).start()
 
     def draw(self):
         self.graphics.drawBoard()
