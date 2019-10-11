@@ -15,34 +15,43 @@ class IDS(Thread):
         frontier = []
         path = {}
         frontier.append(self.startPoint)
-        if self._ids(self.startPoint, visited, frontier, path, self.target):
-            res = [self.target]
-            parent = path[self.target]
-            while parent != self.startPoint:
-                # print(parent)
-                res.append(parent)
-                cur = parent
-                parent = path[cur]
-            res.append(parent)
-
-            for i in res:
-                if i.cellType == '*':
-                    i.changeType('Q')
+        if self._ids(self.startPoint, self.target, 20):
+            # res = [self.target]
+            # parent = path[self.target]
+            # while parent != self.startPoint:
+            #     # print(parent)
+            #     res.append(parent)
+            #     cur = parent
+            #     parent = path[cur]
+            # res.append(parent)
+            #
+            # for i in res:
+            #     if i.cellType == '*':
+            #         i.changeType('Q')
             print("Done")
         else:
             print("There is no path :(")
 
 
-    def _ids(self, curNode, visited, frontier, path, target):
-        if len(frontier) == 0:
-            return False
+    def _ids(self, source, target, maxDepth):
+
+        for i in range(maxDepth):
+            visited = []
+            if self._dfs(source, target, visited, i):
+                return True
+        return False
+
+
+    def _dfs(self, curNode, target, visited, maxDepth):
+        print(curNode)
         if curNode == target:
             return True
-        if target in frontier:
-            return True
+
 
         time.sleep(0.01)
 
+        if maxDepth <= 0:
+            return False
         visited.append(curNode)
         if curNode.cellType == ' ':
             curNode.changeType('*')
@@ -52,13 +61,10 @@ class IDS(Thread):
 
         for child in children:
             if child not in visited:
-                if self._ids(child, visited, frontier, path, target):
-                    path[child] = curNode
+                if self._ids(child, target, maxDepth - 1):
+                    # path[child] = curNode
                     return True
 
         return False
-
-    def _dfs(self):
-        pass
 
 

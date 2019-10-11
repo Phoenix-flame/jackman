@@ -11,6 +11,7 @@ class Astar(Thread):
         self.startPoint = _start
         self.target = _target
         self.map = _map
+        self.res = None
 
 
     def run(self):
@@ -38,8 +39,11 @@ class Astar(Thread):
                     i.changeType('Q')
                 # print(i)
             print("Done")
+            self.res = res
         else:
             print("There is no path :(")
+
+        self.res = None
 
     def _astar(self, curNode, frontier, visited, path, target, g_val):
         if curNode == target:

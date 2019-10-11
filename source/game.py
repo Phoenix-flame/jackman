@@ -8,7 +8,7 @@ from algorithms.IDS import *
 class Game(Thread):
     def __init__(self, _screen):
         super().__init__()
-        self.map = Map("testcases/my_test1")
+        self.map = Map("testcases/my_test2")
         self.graphics = Graphics(_screen, {'col': self.map.cols, 'row': self.map.rows})
         self.__stopped = False
         self.started_algorithm = False
@@ -29,7 +29,7 @@ class Game(Thread):
     def loop(self):
         if not self.started_algorithm:
             self.started_algorithm = True
-            IDS(self.map, self.map.getCell(self.map.p), self.map.getCell(self.map.food1[0])).start()
+            BFS(self.map, self.map.getCell(self.map.p), self.map.getCell(self.map.food1[0])).start()
 
     def draw(self):
         self.graphics.drawBoard()
