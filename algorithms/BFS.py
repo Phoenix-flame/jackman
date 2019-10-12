@@ -11,7 +11,6 @@ class BFS(Thread):
         self.map = _map
         self.startPoint = _start
         self.target = _target
-        self.map = _map
         self.res = None
 
         # Performance measure
@@ -89,7 +88,4 @@ class BFS(Thread):
                         ['Max search depth', self.max_search_depth],
                         ['Search depth', self.search_depth],
                         ['Time', _time]], headers=['Parameter', 'Value']))
-        # print('Nodes expanded:', self.nodes_expanded)
-        # print('Max search depth:', self.max_search_depth)
-        # print('Search depth:', self.search_depth)
 

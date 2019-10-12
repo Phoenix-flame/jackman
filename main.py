@@ -1,6 +1,8 @@
 from source.game import *
 from source.graphics import *
+import sys
 
+sys.setrecursionlimit(50000)
 size = [300, 500]
 pg.init()
 FULL_SCREEN = pg.DOUBLEBUF | pg.FULLSCREEN

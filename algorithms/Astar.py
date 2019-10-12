@@ -11,6 +11,7 @@ class Astar(Thread):
         self.startPoint = _start
         self.target = _target
         self.map = _map
+        print(map)
         self.res = None
 
 

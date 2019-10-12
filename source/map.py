@@ -16,6 +16,11 @@ class Map:
         self.food1 = []
         self.food2 = []
         self.food3 = []
+
+        self.food1_c = 0
+        self.food2_c = 0
+        self.food3_c = 0
+
         self.q = None
         self.p = None
         self.createMap()
@@ -41,12 +46,19 @@ class Map:
                 elif cell == '3':
                     self.food3.append((j, i))
 
+        self.food1_c = len(self.food1)
+        self.food2_c = len(self.food2)
+        self.food3_c = len(self.food3)
+
 
     def getCell(self, x, y):
         return self.map[(x, y)]
 
     def getCell(self, size):
         return self.map[(size[0], size[1])]
+
+    def __len__(self):
+        return self.food1_c + self.food2_c + self.food3_c
 
     def getNextCell(self, curCell, direction):
         _x = curCell.x

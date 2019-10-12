@@ -4,11 +4,13 @@ from algorithms.BFS import *
 from algorithms.Astar import *
 from algorithms.IDS import *
 
+from algorithms.bfs2 import *
+
 
 class Game(Thread):
     def __init__(self, _screen):
         super().__init__()
-        self.map = Map("testcases/test4")
+        self.map = Map("testcases/my_test3")
         self.graphics = Graphics(_screen, {'col': self.map.cols, 'row': self.map.rows})
         self.__stopped = False
         self.started_algorithm = False
@@ -29,7 +31,7 @@ class Game(Thread):
     def loop(self):
         if not self.started_algorithm:
             self.started_algorithm = True
-            BFS(self.map, self.map.getCell(self.map.p), self.map.getCell(self.map.food1[0])).start()
+            BFSv2(self.map).start()
 
     def draw(self):
         self.graphics.drawBoard()
