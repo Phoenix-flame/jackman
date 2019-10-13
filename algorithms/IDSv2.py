@@ -3,18 +3,22 @@
 from threading import Thread
 import time
 from tabulate import tabulate
-from collections import deque
+from enum import Enum
 from source.state import *
-from source.direction import *
+import copy
 
 
+class Direction(Enum):
+    UP = 1
+    DOWN = 2
+    LEFT = 3
+    RIGHT = 4
+    NO = 5
 
-class BFSv2(Thread):
+class IDSv2(Thread):
     def __init__(self, _map):
         super().__init__()
         self.map = _map
-        self.res = None
-        self.target = None
 
         # Performance measure
         self.cost_to_path = 0
@@ -24,92 +28,75 @@ class BFSv2(Thread):
         self.search_depth = 0
         self.max_search_depth = 0
 
+        self.target = None
 
     def run(self):
         tic = time.time()
-        visited = deque([])
-        frontier = deque([])
+
         p = self.map.getCell(self.map.p)
         q = self.map.getCell(self.map.q)
+        startPoint = Statev2(p, q, None, None, len(self.map), None, 0)
 
-
-        frontier.append(Statev2(p, q, None, None, len(self.map), None, 0))
-        startPoint = frontier[0]
-
-        result = []
-        if self._bfs(visited, frontier):
+        if self._ids(100):
             print()
             parent = self.target
-            result.append(parent)
             while parent != startPoint:
-                # print(parent)
+                print(parent)
                 parent = parent.parent
-                result.append(parent)
             print("Done")
-
-            result.reverse()
-            for i in range(len(result)):
-                if i == 0:
-                    continue
-                p_old, q_old = result[i - 1].p, result[i - 1].q
-                p_new, q_new = result[i].p, result[i].q
-                p_old.changeType(' ')
-                q_old.changeType(' ')
-                p_new.changeType('P')
-                q_new.changeType('Q')
-                time.sleep(1)
-
         else:
             print("There is no path :(")
 
         toc = time.time()
         self.show_performance(toc - tic)
 
+    def _ids(self, maxDepth):
+
+        for i in range(maxDepth):
+            visited = []
+            frontier = []
+            p = self.map.getCell(self.map.p)
+            q = self.map.getCell(self.map.q)
+            frontier.append(Statev2(p, q, None, None, len(self.map), None, 0))
 
 
+            if self._dfs(visited, frontier, i):
+                return True
+        return False
 
 
-
-
-
-
-
-    def _bfs(self, visited, frontier):
+    def _dfs(self, visited, frontier, maxDepth):
         if len(frontier) == 0:
             return False
-        curNode = frontier.popleft()
-        # print(curNode)
+        curNode = frontier[-1]
+        del frontier[-1]
+        print(curNode.result)
         if curNode.result == 0:
             self.target = curNode
             self.search_depth = curNode.depth
             return True
 
+
+        # time.sleep(0.01)
+
+        if maxDepth <= 0:
+            return False
+
         visited.append(curNode)
 
         # DON'T touch this
-        children = self.getAdjacents(curNode)
+        children = reversed(self.getAdjacents(curNode))
         self.nodes_expanded += 1
 
 
         for child in children:
             if child not in visited:
-                frontier.append(child)
                 visited.append(child)
+                frontier.append(child)
+                if self._dfs(visited, frontier, maxDepth - 1):
+                    return True
 
-                # DON'T touch this
-                if child.depth > self.max_search_depth:
-                    self.max_search_depth += 1
-
-        # DON'T touch this
-        if len(frontier) > self.max_fringe_size:
-            self.max_fringe_size = len(frontier)
-
-        return self._bfs(visited, frontier)
-
-
-
-
-
+        return False
 
 
 
@@ -130,17 +117,11 @@ class BFSv2(Thread):
         # each adjacent consists of a cell and a dir:
         for i in p_adj:
             for j in q_adj:
-                p_dir, q_dir = i['dir'], j['dir']
-                p_cell, q_cell = i['cell'], j['cell']
-                if p_dir != Direction.NO and q_dir != Direction.NO:
-                    continue
-                if q_cell.getType() == '1' and q_cell.getKey() not in curState.foods:
-                    continue
-                if p_cell.getType() == '2' and p_cell.getKey() not in curState.foods:
-                    continue
                 score = 0
                 unseen_foods = []
-                if p_cell != q_cell:
+                if i['cell'] != j['cell']:
+                    p_dir, q_dir = i['dir'], j['dir']
+                    p_cell, q_cell = i['cell'], j['cell']
                     if p_cell.getKey() not in curState.foods and (p_cell.getType() == '1' or p_cell.getType() == '3'):
                         unseen_foods.append(p_cell.getKey())
                         score += 1
@@ -154,6 +135,8 @@ class BFSv2(Thread):
                                        curState,
                                        curState.depth + 1,
                                        curState.foods + unseen_foods))
+
+
                 else:
                     continue
         return res
@@ -166,9 +149,9 @@ class BFSv2(Thread):
             nextCell = self.getNextCell(curCell, d)
             if nextCell.getType() == '%':
                 continue
-            if player == 'P' and nextCell:
+            if player == 'P' and nextCell and nextCell.getType() != '2':
                 res.append({'cell': nextCell, 'dir': d})
-            elif player == 'Q' and nextCell:
+            elif player == 'Q' and nextCell and nextCell.getType() != '1':
                 res.append({'cell': nextCell, 'dir': d})
         return res
 
