@@ -10,7 +10,7 @@ from source.state import *
 from source.direction import *
 
 
-class AstarV2(Thread):
+class Astar(Thread):
     def __init__(self, _map):
         super().__init__()
         self.map = _map
@@ -111,7 +111,7 @@ class AstarV2(Thread):
 
         dist_overall = sum_dist_p + sum_dist_q
 
-        return dist_overall * result
+        return np.exp(dist_overall) ** result
 
     @staticmethod
     def EuclideanDist(p1, p2):
@@ -122,15 +122,15 @@ class AstarV2(Thread):
         return np.abs(p1.x - p2.x) + np.abs(p1.y - p2.y)
 
 
-    # Adherents of current state -> State
+    # Adjacents of current state -> State
     def getAdjacents(self, curState):
-        res = []
+        res = deque([])
         p = curState.p
         q = curState.q
 
         # Possible adjacents for each agent
-        p_adj = self.getAdjacentsCell(p, 'P')
-        q_adj = self.getAdjacentsCell(q, 'Q')
+        p_adj = self.getAdjacentsCell(p)
+        q_adj = self.getAdjacentsCell(q)
 
         # Create states by combining adjacents
         # each adjacent consists of a cell and a dir:
@@ -145,7 +145,7 @@ class AstarV2(Thread):
                 if p_cell.getType() == '2' and p_cell.getKey() not in curState.foods:
                     continue
                 score = 0
-                unseen_foods = []
+                unseen_foods = deque([])
                 if p_cell != q_cell:
                     if p_cell.getKey() not in curState.foods and (p_cell.getType() == '1' or p_cell.getType() == '3'):
                         unseen_foods.append(p_cell.getKey())
@@ -154,7 +154,7 @@ class AstarV2(Thread):
                         unseen_foods.append(q_cell.getKey())
                         score += 1
                     # p, q, p_action, q_action, res, parent, depth, foods=None):
-                    res.append(Statev2(p_cell, q_cell,
+                    res.append(State(p_cell, q_cell,
                                        p_dir, q_dir,
                                        curState.result - score,
                                        curState,
@@ -166,16 +166,15 @@ class AstarV2(Thread):
 
 
     # Adjacents of current cell -> Cell
-    def getAdjacentsCell(self, curCell, player):
+    def getAdjacentsCell(self, curCell):
         res = []
         for d in Direction:
             nextCell = self.getNextCell(curCell, d)
+            if nextCell is None:
+                continue
             if nextCell.getType() == '%':
                 continue
-            if player == 'P' and nextCell:
-                res.append({'cell': nextCell, 'dir': d})
-            elif player == 'Q' and nextCell:
-                res.append({'cell': nextCell, 'dir': d})
+            res.append({'cell': nextCell, 'dir': d})
         return res
 
 
@@ -239,7 +238,7 @@ class AstarV2(Thread):
     def createInitState(self, frontier):
         p = self.map.getCell(self.map.p)
         q = self.map.getCell(self.map.q)
-        frontier.append(Statev2(p, q, None, None, len(self.map), None, 0))
+        frontier.append(State(p, q, None, None, len(self.map), None, 0))
         frontier[0].f_val = self.heuristic(frontier[0])
         self.startPoint = frontier[0]
 
