@@ -3,7 +3,6 @@
 from threading import Thread
 import time
 from tabulate import tabulate
-from collections import deque
 from source.state import *
 from source.direction import *
 
@@ -67,12 +66,9 @@ class BFS(Thread):
         visited.add(curNode)
 
         # DON'T touch this
-        tic = time.time()
         children = self.getAdjacents(curNode)
         self.nodes_expanded += 1
-        toc = time.time()
-        # if (toc - tic) > 0.01:
-        #     self.show_performance(toc - tic)
+
 
         for child in children:
             if child not in visited:

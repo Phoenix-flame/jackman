@@ -5,7 +5,6 @@ import numpy as np
 import operator
 import time
 from tabulate import tabulate
-from collections import deque
 from source.state import *
 from source.direction import *
 
@@ -33,7 +32,7 @@ class Astar(Thread):
 
         # Preparation
         frontier = deque([])
-        visited = deque([])
+        visited = set()
         self.createInitState(frontier)
         g_val = 0
 
@@ -57,7 +56,7 @@ class Astar(Thread):
             self.search_depth = curNode.depth
             return True
 
-        visited.append(curNode)
+        visited.add(curNode)
 
         # DON'T touch this
         children = self.getAdjacents(curNode)
@@ -66,7 +65,7 @@ class Astar(Thread):
         for child in children:
             if child not in visited:
                 child.f_val = (self.heuristic(child)) + g_val
-                visited.append(child)
+                visited.add(child)
                 frontier.append(child)
                 if child.depth > self.max_search_depth:
                     self.max_search_depth += 1
