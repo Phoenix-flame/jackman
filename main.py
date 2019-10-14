@@ -6,7 +6,7 @@ sys.setrecursionlimit(50000)
 ui = True
 
 if ui:
-    size = [300, 300]
+    size = [300, 500]
     FULL_SCREEN = pg.DOUBLEBUF | pg.FULLSCREEN
     NORMAL = pg.DOUBLEBUF | pg.RESIZABLE
     pg.init()

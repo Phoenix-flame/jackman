@@ -8,7 +8,7 @@ from algorithms.BFS import *
 class Game(Thread):
     def __init__(self, _screen, ui=False):
         super().__init__()
-        self.map = Map("testcases/test4")
+        self.map = Map("testcases/test5")
         self.ui = ui
         self.graphics = None
         if ui:
@@ -30,7 +30,7 @@ class Game(Thread):
     def loop(self):
         if not self.started_algorithm:
             self.started_algorithm = True
-            Astar(self.map).start()
+            BFS(self.map).start()
 
     def draw(self):
         self.graphics.drawBoard()

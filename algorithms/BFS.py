@@ -31,18 +31,49 @@ class BFS(Thread):
         frontier = deque([])
         self.createInitState(frontier)
 
+        while frontier.__len__():
+            curNode = frontier.popleft()
+            visited.add(curNode)
+            if curNode.result == 0:
+                self.target = curNode
+                self.search_depth = curNode.depth
+                break
+
+
+            # DON'T touch this
+            children = self.getAdjacents(curNode)
+            self.nodes_expanded += 1
+
+            for child in children:
+                if child not in visited:
+                    frontier.append(child)
+                    visited.add(child)
+
+                    # DON'T touch this
+                    if child.depth > self.max_search_depth:
+                        self.max_search_depth += 1
+
+            # DON'T touch this
+            if len(frontier) > self.max_fringe_size:
+                self.max_fringe_size = len(frontier)
+
+
+        self.getPath()
+        self.show_performance(time.time() - tic)
+        self.showResult()
+
         # test = self.getAdjacents(self.startPoint)
         # for i in test:
         #     print(i)
-        if self._bfs(visited, frontier):
-            self.getPath()
-            print("Done")
-            toc = time.time()
-            self.show_performance(toc - tic)
-            self.showResult()
-
-        else:
-            print("There is no path :(")
+        # if self._bfs(visited, frontier):
+        #     self.getPath()
+        #     print("Done")
+        #     toc = time.time()
+        #     self.show_performance(toc - tic)
+        #     self.showResult()
+        #
+        # else:
+        #     print("There is no path :(")
 
 
 
