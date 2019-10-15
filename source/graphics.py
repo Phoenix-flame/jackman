@@ -26,7 +26,7 @@ class Graphics:
         self.screen = screen
         self.cols = size['col']
         self.rows = size['row']
-        self.size = 40
+        self.size = 30
         self.screen = pg.display.set_mode([self.cols*self.size + 5, self.rows*self.size + 5], pg.RESIZABLE)
 
     def drawCells(self, _map):

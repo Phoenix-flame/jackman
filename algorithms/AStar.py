@@ -91,26 +91,26 @@ class Astar(Thread):
 
         result = state.result
 
-        sum_dist_p = 0
-        sum_dist_q = 0
+        sum_dist_p = 1
+        sum_dist_q = 1
 
         for f1 in self.map.food1:
             if f1 in state.foods:
                 continue
-            sum_dist_p += self.EuclideanDist(self.map.getCell(f1), p_cell)
+            sum_dist_p *= self.EuclideanDist(self.map.getCell(f1), p_cell)
         for f2 in self.map.food2:
             if f2 in state.foods:
                 continue
-            sum_dist_q += self.EuclideanDist(self.map.getCell(f2), q_cell)
+            sum_dist_q *= self.EuclideanDist(self.map.getCell(f2), q_cell)
         for f3 in self.map.food3:
             if f3 in state.foods:
                 continue
-            sum_dist_p += self.EuclideanDist(self.map.getCell(f3), p_cell)
-            sum_dist_q += self.EuclideanDist(self.map.getCell(f3), q_cell)
+            sum_dist_p *= self.EuclideanDist(self.map.getCell(f3), p_cell)
+            sum_dist_q *= self.EuclideanDist(self.map.getCell(f3), q_cell)
 
         dist_overall = sum_dist_p + sum_dist_q
 
-        return np.exp(dist_overall) ** result
+        return result
 
     @staticmethod
     def EuclideanDist(p1, p2):
@@ -217,6 +217,7 @@ class Astar(Thread):
             result.append(parent)
         result.reverse()
         self.path = result
+        print('Path length:', len(self.path))
 
 
     # This function will be deprecated in final version
@@ -230,7 +231,7 @@ class Astar(Thread):
             q_old.changeType(' ')
             p_new.changeType('P')
             q_new.changeType('Q')
-            time.sleep(0.2)
+            time.sleep(0.05)
 
 
     # Initiating very first state of the problem

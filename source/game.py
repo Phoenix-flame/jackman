@@ -3,7 +3,7 @@ from source.graphics import *
 
 from algorithms.AStar import *
 from algorithms.BFS import *
-
+from algorithms.IDS import *
 
 class Game(Thread):
     def __init__(self, _screen, ui=False):
@@ -30,7 +30,7 @@ class Game(Thread):
     def loop(self):
         if not self.started_algorithm:
             self.started_algorithm = True
-            BFS(self.map).start()
+            IDS(self.map).start()
 
     def draw(self):
         self.graphics.drawBoard()

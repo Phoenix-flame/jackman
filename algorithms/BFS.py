@@ -15,6 +15,7 @@ class BFS(Thread):
         self.path = None
         self.startPoint = None
         self.target = None
+        self.totalStates = deque([])
 
         # Performance measure
         self.cost_to_path = 0
@@ -34,7 +35,11 @@ class BFS(Thread):
         while frontier.__len__():
             curNode = frontier.popleft()
             visited.add(curNode)
+            # print(curNode.foods)
+            # self.totalStates.append(curNode)
+            # print(curNode.result)
             if curNode.result == 0:
+                print("Okkkkkkkkkkkkkkkkkk")
                 self.target = curNode
                 self.search_depth = curNode.depth
                 break
@@ -46,6 +51,7 @@ class BFS(Thread):
 
             for child in children:
                 if child not in visited:
+                    child.parent = curNode
                     frontier.append(child)
                     visited.add(child)
 
@@ -57,74 +63,12 @@ class BFS(Thread):
             if len(frontier) > self.max_fringe_size:
                 self.max_fringe_size = len(frontier)
 
-
-        self.getPath()
-        self.show_performance(time.time() - tic)
-        self.showResult()
-
-        # test = self.getAdjacents(self.startPoint)
-        # for i in test:
-        #     print(i)
-        # if self._bfs(visited, frontier):
-        #     self.getPath()
-        #     print("Done")
-        #     toc = time.time()
-        #     self.show_performance(toc - tic)
-        #     self.showResult()
-        #
-        # else:
-        #     print("There is no path :(")
-
-
-
-
-
-
-
-
-
-
-    def _bfs(self, visited, frontier):
-        if frontier.__len__() == 0:
-            return False
-        curNode = frontier.popleft()
-
-        if curNode.result == 0:
-            self.target = curNode
-            self.search_depth = curNode.depth
-            return True
-
-        visited.add(curNode)
-
-        # DON'T touch this
-        children = self.getAdjacents(curNode)
-        self.nodes_expanded += 1
-
-
-        for child in children:
-            if child not in visited:
-                frontier.append(child)
-                visited.add(child)
-
-                # DON'T touch this
-                if child.depth > self.max_search_depth:
-                    self.max_search_depth += 1
-
-        # DON'T touch this
-        if len(frontier) > self.max_fringe_size:
-            self.max_fringe_size = len(frontier)
-
-        return self._bfs(visited, frontier)
-
-
-
-
-
-
-
-
-
-
+        if self.target:
+            self.getPath()
+            self.show_performance(time.time() - tic)
+            self.showResult()
+        else:
+            print("There is no path.")
 
     # Adherents of current state -> State
     def getAdjacents(self, curState):
@@ -139,6 +83,8 @@ class BFS(Thread):
         if q_adj.get(Direction.NO) is not None:
             q_dir = Direction.NO
             for p_dir in p_adj:
+                if p_dir == Direction.NO:
+                    continue
                 p_cell = p_adj[p_dir]
                 q_cell = q_adj[Direction.NO]
 
@@ -153,10 +99,7 @@ class BFS(Thread):
                     if p_cell.getKey() not in curState.foods and (p_cell.getType() == '1' or p_cell.getType() == '3'):
                         unseen_foods.append(p_cell.getKey())
                         score += 1
-                    if q_cell.getKey() not in curState.foods and (q_cell.getType() == '2' or q_cell.getType() == '3'):
-                        unseen_foods.append(q_cell.getKey())
-                        score += 1
-                    # p, q, p_action, q_action, res, parent, depth, foods=None):
+
                     res.append(State(p_cell, q_cell,
                                      p_dir, q_dir,
                                      curState.result - score,
@@ -167,6 +110,8 @@ class BFS(Thread):
         # P remains in its location, Q must choose between its neighbors
         if p_adj.get(Direction.NO) is not None:
             for q_dir in q_adj:
+                if q_dir == Direction.NO:
+                    continue
                 q_cell = q_adj[q_dir]
                 p_cell = p_adj[Direction.NO]
 
@@ -177,9 +122,6 @@ class BFS(Thread):
                 score = 0
                 unseen_foods = deque([])
                 if p_cell.getKey() != q_cell.getKey():
-                    if p_cell.getKey() not in curState.foods and (p_cell.getType() == '1' or p_cell.getType() == '3'):
-                        unseen_foods.append(p_cell.getKey())
-                        score += 1
                     if q_cell.getKey() not in curState.foods and (q_cell.getType() == '2' or q_cell.getType() == '3'):
                         unseen_foods.append(q_cell.getKey())
                         score += 1
@@ -246,6 +188,7 @@ class BFS(Thread):
             result.append(parent)
         result.reverse()
         self.path = result
+        print('Path length:', len(self.path))
 
     def createInitState(self, frontier):
         p = self.map.getCell(self.map.p)
