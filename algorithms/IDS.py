@@ -40,49 +40,61 @@ class IDS(Thread):
 
     def _ids(self, maxDepth):
         for i in range(maxDepth):
-            visited = set()
-            frontier = deque([])
-            self.createInitState(frontier)
-            if self._dfs(visited, frontier, i):
-                print("Done")
-                return True
+            explored = set()
+            stack = deque([])
+            self.createInitState(stack)
+
+            while stack:
+                node = stack.pop()
+                explored.add(node)
+
+                if node.result == 0:
+                    self.target = node
+                    return stack
+
+                if node.depth >= i:
+                    continue
+
+                neighbors = reversed(self.getAdjacents(node))
+
+                for neighbor in neighbors:
+                    if neighbor not in explored:
+                        stack.append(neighbor)
+                        explored.add(neighbor)
+
+                        if neighbor.depth > self.max_search_depth:
+                            self.max_search_depth += 1
+
+                if len(stack) > self.max_fringe_size:
+                    self.max_fringe_size = len(stack)
+
+
+
+            #
+            #
+            # if self._dfs(frontier[0], visited, frontier, i):
+            #     print("Done")
+            #     return True
         return False
 
 
-    def _dfs(self, visited, frontier, maxDepth):
+    def _dfs(self, curNode, visited, frontier, maxDepth):
+        if curNode.result == 0:
+            self.target = curNode
+            return True
 
-        while frontier.__len__():
-            curNode = frontier.pop()
-            visited.add(curNode)
+        if curNode.depth >= maxDepth:
+            # print("There is no path in depth:", maxDepth)
+            return False
+        # visited.add(curNode)
 
-            if curNode.result == 0:
-                self.target = curNode
-                self.search_depth = curNode.depth
+        children = self.getAdjacents(curNode)
+
+        for child in children:
+            # if child not in visited:
+            if self._dfs(child, visited, frontier, maxDepth):
                 return True
-
-            if maxDepth <= curNode.depth:
-                return False
-
-            # DON'T touch this
-            children = self.getAdjacents(curNode)
-            children.reverse()
-            self.nodes_expanded += 1
-
-            for child in children:
-                if child not in frontier:
-                    frontier.append(child)
-                    visited.add(child)
-
-                    # DON'T touch this
-                    if child.depth > self.max_search_depth:
-                        self.max_search_depth += 1
-
-            # DON'T touch this
-            if len(frontier) > self.max_fringe_size:
-                self.max_fringe_size = len(frontier)
-
-
-
+        return False
 
     # Adherents of current state -> State
     def getAdjacents(self, curState):
@@ -216,7 +228,7 @@ class IDS(Thread):
         for i in range(len(self.path)):
             if i == 0:
                 continue
-            print(self.path[i])
+            # print(self.path[i])
             p_old, q_old = self.path[i - 1].p, self.path[i - 1].q
             p_new, q_new = self.path[i].p, self.path[i].q
             p_old.changeType(' ')

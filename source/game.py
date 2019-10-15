@@ -8,7 +8,7 @@ from algorithms.IDS import *
 class Game(Thread):
     def __init__(self, _screen, ui=False):
         super().__init__()
-        self.map = Map("testcases/test5")
+        self.map = Map("testcases/test1")
         self.ui = ui
         self.graphics = None
         if ui:
