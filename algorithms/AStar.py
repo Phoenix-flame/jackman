@@ -9,9 +9,9 @@ from source.state import *
 from source.direction import *
 
 
-class Astar(Thread):
+class Astar:
     def __init__(self, _map):
-        super().__init__()
+        self.name = "A*"
         self.map = _map
         self.startPoint = None
         self.target = None

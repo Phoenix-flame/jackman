@@ -6,9 +6,9 @@ from tabulate import tabulate
 from source.state import *
 from source.direction import *
 
-class IDS(Thread):
+class IDS:
     def __init__(self, _map):
-        super().__init__()
+        self.name = "IDS"
         self.map = _map
         self.path = None
         self.startPoint = None

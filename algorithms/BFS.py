@@ -1,6 +1,5 @@
 # Uninformed search algorithm
 
-from threading import Thread
 import time
 from tabulate import tabulate
 from source.state import *
@@ -8,9 +7,9 @@ from source.direction import *
 
 
 
-class BFS(Thread):
+class BFS:
     def __init__(self, _map):
-        super().__init__()
+        self.name = "BFS"
         self.map = _map
         self.path = None
         self.startPoint = None
@@ -25,6 +24,7 @@ class BFS(Thread):
         self.search_depth = 0
         self.max_search_depth = 0
         self.time = 0
+        self.distance = 0
 
 
     def run(self):
@@ -63,7 +63,6 @@ class BFS(Thread):
         if self.target:
             self.getPath()
             self.show_performance(time.time() - tic)
-            ##self.showResult()
         else:
             print("There is no path.")
 
@@ -185,6 +184,7 @@ class BFS(Thread):
             result.append(parent)
         result.reverse()
         self.path = result
+        self.distance = self.path.__len__()
         # print('Path length:', len(self.path))
 
     def createInitState(self, frontier):
@@ -194,18 +194,6 @@ class BFS(Thread):
         frontier.append(State(p, q, None, None, len(self.map), None, 0))
         self.startPoint = frontier[0]
 
-
-    def showResult(self):
-        for i in range(len(self.path)):
-            if i == 0:
-                continue
-            p_old, q_old = self.path[i - 1].p, self.path[i - 1].q
-            p_new, q_new = self.path[i].p, self.path[i].q
-            p_old.changeType(' ')
-            q_old.changeType(' ')
-            p_new.changeType('P')
-            q_new.changeType('Q')
-            time.sleep(0.2)
 
     def show_performance(self, _time):
         self.time = _time
