@@ -50,13 +50,17 @@ class IDS(Thread):
     def _dfs(self, curNode, visited, depth):
         if curNode.result == 0:
             self.target = curNode
+            self.search_depth = curNode.depth
             return True
         if curNode.depth > depth:
             return False
         visited.add(curNode)
-        for i in self.getAdjacents(curNode):
-            if i not in visited:
-                if self._dfs(i, visited, depth):
+        self.nodes_expanded += 1
+        for neighbor in self.getAdjacents(curNode):
+            if neighbor.depth > self.max_search_depth:
+                self.max_search_depth = neighbor.depth
+            if neighbor not in visited:
+                if self._dfs(neighbor, visited, depth):
                     return True
         return False
 

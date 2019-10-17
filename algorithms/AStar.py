@@ -5,6 +5,8 @@ import numpy as np
 import operator
 import time
 from tabulate import tabulate
+from heapq import heapify, heappop, heappush
+
 from source.state import *
 from source.direction import *
 
@@ -12,6 +14,7 @@ from source.direction import *
 class Astar(Thread):
     def __init__(self, _map):
         super().__init__()
+        print("This is A*")
         self.map = _map
         self.startPoint = None
         self.target = None
@@ -31,64 +34,98 @@ class Astar(Thread):
         print("Let's rock")
 
         # Preparation
-        frontier = deque([])
+        frontier = []
+
         visited = set()
         self.createInitState(frontier)
         g_val = 0
 
+
         # Let's rock
         tic = time.time()
-        if self._astar(frontier, visited, g_val):
-            self.getPath()
-            toc = time.time()
-            self.show_performance(toc - tic)
-            self.showResult()  # It will be deprecated in final version
-        else:
-            print("There is no path :(")
+
+        came_from, cost_so_far = self.astar2()
+
+
+
+        print('ok')
+        print(self.target.parent)
+        # for i in came_from:
+        #     print(i)
+        self.getPath()
+        toc = time.time()
+        self.show_performance(toc - tic)
+        self.showResult()
+
+        # if self._astar(frontier, visited, g_val):
+        #     self.getPath()
+        #     toc = time.time()
+        #     self.show_performance(toc - tic)
+        #     self.showResult()  # It will be deprecated in final version
+        # else:
+        #     print("There is no path :(")
 
 
     def _astar(self, frontier, visited, g_val):
-        curNode = frontier.popleft()
 
-        if curNode.result == 0:
-            self.target = curNode
-            # DON'T touch it
-            self.search_depth = curNode.depth
-            return True
+        heapify(frontier)
+        heap_entry = {self.startPoint.__hash__(): (self.startPoint, 0)}
+        visited = set()
+        visited.add(self.startPoint)
+        while frontier.__len__():
+            curNode = heappop(frontier)
+            if curNode.result == 0:
+                self.target = curNode
+                return True
 
-        visited.add(curNode)
-
-        # DON'T touch this
-        children = self.getAdjacents(curNode)
-        self.nodes_expanded += 1
-
-        for child in children:
-            if child not in visited:
-                tmp, pfood, qfood = self.heuristic(child)
-                child.qfood = qfood
-                child.pfood = pfood
-                child.f_val = tmp + g_val
-                child.h_val = tmp
-                child.g_val = g_val
-                visited.add(child)
-                frontier.append(child)
-                if child.depth > self.max_search_depth:
-                    self.max_search_depth += 1
-
-        if len(frontier) == 0:
-            return False
-
-        frontier = deque(sorted(frontier, key=operator.attrgetter('g_val')))
-        g_val += 1
-
-        # DON'T touch it
-        if len(frontier) > self.max_fringe_size:
-            self.max_fringe_size = len(frontier)
-
-        return self._astar(frontier, visited, g_val)
+            children = self.getAdjacents(curNode)
+            self.nodes_expanded += 1
 
 
+            for child in children:
+                child.f_val = g_val + self.heuristic(child)
 
+                if child not in visited:
+                    heappush(frontier, child)
+                    visited.add(child)
+                    heap_entry[child.__hash__()] = (child, child.f_val)
+
+                # elif child in visited:
+                #
+                #     if child.f_val < heap_entry[child.__hash__()][1]:
+                #         tmp = heap_entry[child.__hash__()][0]
+                #         print(child.f_val, tmp.f_val)
+                #         hindex = frontier.index(tmp)
+                #         frontier[hindex] = child
+                #         heap_entry[child.__hash__()] = (child, child.f_val)
+                #
+                #         heapify(frontier)
+
+            g_val += 1
+
+    def astar2(self):
+        frontier = [self.startPoint]
+        heapify(frontier)
+        came_from = {}
+        cost_so_far = {}
+        came_from[self.startPoint] = None
+        cost_so_far[self.startPoint] = 0
+
+        while frontier:
+            curNode = heappop(frontier)
+            if curNode.result == 0:
+                self.target = curNode
+                break
+
+            for next in self.getAdjacents(curNode):
+                new_cost = cost_so_far[curNode] + 1
+                if next not in cost_so_far or new_cost < cost_so_far[next]:
+                    cost_so_far[next] = new_cost
+                    next.f_val = new_cost + self.heuristic(next)
+                    heappush(frontier, next)
+                    came_from[next] = curNode
+
+        return came_from, cost_so_far
 
     def heuristic(self, state):
         p_cell = state.p
@@ -104,20 +141,20 @@ class Astar(Thread):
         for f1 in self.map.food1:
             if f1 in state.foods:
                 continue
-            p_foods.append(self.EuclideanDist(self.map.getCell(f1), p_cell))
-            sum_dist_p += self.EuclideanDist(self.map.getCell(f1), p_cell)
+            p_foods.append(self.ManhatanDist(self.map.getCell(f1), p_cell))
+            sum_dist_p += self.ManhatanDist(self.map.getCell(f1), p_cell)
         for f2 in self.map.food2:
             if f2 in state.foods:
                 continue
-            q_foods.append(self.EuclideanDist(self.map.getCell(f2), q_cell))
-            sum_dist_q += self.EuclideanDist(self.map.getCell(f2), q_cell)
+            q_foods.append(self.ManhatanDist(self.map.getCell(f2), q_cell))
+            sum_dist_q += self.ManhatanDist(self.map.getCell(f2), q_cell)
         for f3 in self.map.food3:
             if f3 in state.foods:
                 continue
-            p_foods.append(self.EuclideanDist(self.map.getCell(f3), p_cell))
-            q_foods.append(self.EuclideanDist(self.map.getCell(f3), q_cell))
-            sum_dist_p += self.EuclideanDist(self.map.getCell(f3), p_cell)
-            sum_dist_q += self.EuclideanDist(self.map.getCell(f3), q_cell)
+            p_foods.append(self.ManhatanDist(self.map.getCell(f3), p_cell))
+            q_foods.append(self.ManhatanDist(self.map.getCell(f3), q_cell))
+            sum_dist_p += self.ManhatanDist(self.map.getCell(f3), p_cell)
+            sum_dist_q += self.ManhatanDist(self.map.getCell(f3), q_cell)
 
         if len(p_foods) != 0:
             p_foods = min(p_foods)
@@ -131,7 +168,8 @@ class Astar(Thread):
 
         dist_overall = p_foods + q_foods
 
-        return dist_overall * result, p_foods, q_foods
+        return dist_overall * result
+
 
     @staticmethod
     def EuclideanDist(p1, p2):
@@ -172,7 +210,7 @@ class Astar(Thread):
                         unseen_foods.append(p_cell.getKey())
                         score += 1
 
-                    res.append(State(p_cell, q_cell,
+                    res.append(StateA(p_cell, q_cell,
                                      p_dir, q_dir,
                                      curState.result - score,
                                      curState,
@@ -198,7 +236,7 @@ class Astar(Thread):
                         unseen_foods.append(q_cell.getKey())
                         score += 1
                     # p, q, p_action, q_action, res, parent, depth, foods=None):
-                    res.append(State(p_cell, q_cell,
+                    res.append(StateA(p_cell, q_cell,
                                      Direction.NO, q_dir,
                                      curState.result - score,
                                      curState,
@@ -265,19 +303,16 @@ class Astar(Thread):
     def createInitState(self, frontier):
         p = self.map.getCell(self.map.p)
         q = self.map.getCell(self.map.q)
+        self.startPoint = StateA(p, q, None, None, len(self.map), None, 0)
+        self.startPoint.f_val = self.heuristic(self.startPoint)
 
-        frontier.append(State(p, q, None, None, len(self.map), None, 0))
-        self.startPoint = frontier[0]
+        heappush(frontier, self.startPoint)
 
 
     def showResult(self):
         for i in range(len(self.path)):
             if i == 0:
                 continue
-            # print()
-            # print(self.path[i].pfood)
-            # print(self.path[i].qfood)
-            # print(self.path[i].h_val)
             p_old, q_old = self.path[i - 1].p, self.path[i - 1].q
             p_new, q_new = self.path[i].p, self.path[i].q
             p_old.changeType(' ')

@@ -29,14 +29,10 @@ class Game(Thread):
 
     def loop(self):
         if not self.started_algorithm:
-            time = 0
             self.started_algorithm = True
-            for i in range(3):
-                tmp = BFS(self.map)
-                tmp.start()
-                tmp.join()
-                time += tmp.time
-            print(time/3.0)
+            tmp = Astar(self.map)
+            tmp.start()
+            # tmp.join()
 
     def draw(self):
         self.graphics.drawBoard()

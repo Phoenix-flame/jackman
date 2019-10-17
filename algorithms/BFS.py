@@ -1,11 +1,11 @@
 # Uninformed search algorithm
+# Completed
 
 from threading import Thread
 import time
 from tabulate import tabulate
 from source.state import *
 from source.direction import *
-
 
 
 class BFS(Thread):
@@ -26,7 +26,6 @@ class BFS(Thread):
         self.max_search_depth = 0
         self.time = 0
 
-
     def run(self):
         tic = time.time()
         visited = set()
@@ -36,7 +35,7 @@ class BFS(Thread):
         while frontier.__len__():
             curNode = frontier.popleft()
             visited.add(curNode)
-
+            print(curNode.depth)
             if curNode.result == 0:
                 self.target = curNode
                 self.search_depth = curNode.depth
@@ -63,7 +62,7 @@ class BFS(Thread):
         if self.target:
             self.getPath()
             self.show_performance(time.time() - tic)
-            ##self.showResult()
+            self.showResult()
         else:
             print("There is no path.")
 
@@ -97,12 +96,12 @@ class BFS(Thread):
                         unseen_foods.append(p_cell.getKey())
                         score += 1
 
-                    res.append(State(p_cell, q_cell,
-                                     p_dir, q_dir,
-                                     curState.result - score,
-                                     curState,
-                                     curState.depth + 1,
-                                     curState.foods + unseen_foods))
+                    res.append(StateB(p_cell, q_cell,
+                                      p_dir, q_dir,
+                                      curState.result - score,
+                                      curState,
+                                      curState.depth + 1,
+                                      curState.foods + unseen_foods))
 
         # P remains in its location, Q must choose between its neighbors
         if p_adj.get(Direction.NO) is not None:
@@ -123,15 +122,14 @@ class BFS(Thread):
                         unseen_foods.append(q_cell.getKey())
                         score += 1
                     # p, q, p_action, q_action, res, parent, depth, foods=None):
-                    res.append(State(p_cell, q_cell,
-                                     Direction.NO, q_dir,
-                                     curState.result - score,
-                                     curState,
-                                     curState.depth + 1,
-                                     curState.foods + unseen_foods))
+                    res.append(StateB(p_cell, q_cell,
+                                      Direction.NO, q_dir,
+                                      curState.result - score,
+                                      curState,
+                                      curState.depth + 1,
+                                      curState.foods + unseen_foods))
 
         return res
-
 
     # Adjacents of current cell -> Cell
     def getAdjacentsCell(self, curCell):
@@ -142,7 +140,6 @@ class BFS(Thread):
                 continue
             res[d] = nextCell
         return res
-
 
     def getNextCell(self, curCell, direction):
         _x = curCell.x
@@ -173,9 +170,6 @@ class BFS(Thread):
             except KeyError:
                 return None
 
-
-
-
     def getPath(self):
         result = []
         parent = self.target
@@ -191,9 +185,8 @@ class BFS(Thread):
         p = self.map.getCell(self.map.p)
         q = self.map.getCell(self.map.q)
 
-        frontier.append(State(p, q, None, None, len(self.map), None, 0))
+        frontier.append(StateB(p, q, None, None, len(self.map), None, 0))
         self.startPoint = frontier[0]
-
 
     def showResult(self):
         for i in range(len(self.path)):
