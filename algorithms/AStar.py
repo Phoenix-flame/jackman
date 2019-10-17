@@ -64,7 +64,12 @@ class Astar(Thread):
 
         for child in children:
             if child not in visited:
-                child.f_val = (self.heuristic(child)) + g_val
+                tmp, pfood, qfood = self.heuristic(child)
+                child.qfood = qfood
+                child.pfood = pfood
+                child.f_val = tmp + g_val
+                child.h_val = tmp
+                child.g_val = g_val
                 visited.add(child)
                 frontier.append(child)
                 if child.depth > self.max_search_depth:
@@ -73,7 +78,7 @@ class Astar(Thread):
         if len(frontier) == 0:
             return False
 
-        frontier = deque(sorted(frontier, key=operator.attrgetter('f_val')))
+        frontier = deque(sorted(frontier, key=operator.attrgetter('g_val')))
         g_val += 1
 
         # DON'T touch it
@@ -94,23 +99,39 @@ class Astar(Thread):
         sum_dist_p = 1
         sum_dist_q = 1
 
+        p_foods = []
+        q_foods = []
         for f1 in self.map.food1:
             if f1 in state.foods:
                 continue
-            sum_dist_p *= self.EuclideanDist(self.map.getCell(f1), p_cell)
+            p_foods.append(self.EuclideanDist(self.map.getCell(f1), p_cell))
+            sum_dist_p += self.EuclideanDist(self.map.getCell(f1), p_cell)
         for f2 in self.map.food2:
             if f2 in state.foods:
                 continue
-            sum_dist_q *= self.EuclideanDist(self.map.getCell(f2), q_cell)
+            q_foods.append(self.EuclideanDist(self.map.getCell(f2), q_cell))
+            sum_dist_q += self.EuclideanDist(self.map.getCell(f2), q_cell)
         for f3 in self.map.food3:
             if f3 in state.foods:
                 continue
-            sum_dist_p *= self.EuclideanDist(self.map.getCell(f3), p_cell)
-            sum_dist_q *= self.EuclideanDist(self.map.getCell(f3), q_cell)
+            p_foods.append(self.EuclideanDist(self.map.getCell(f3), p_cell))
+            q_foods.append(self.EuclideanDist(self.map.getCell(f3), q_cell))
+            sum_dist_p += self.EuclideanDist(self.map.getCell(f3), p_cell)
+            sum_dist_q += self.EuclideanDist(self.map.getCell(f3), q_cell)
 
-        dist_overall = sum_dist_p + sum_dist_q
+        if len(p_foods) != 0:
+            p_foods = min(p_foods)
+        else:
+            p_foods = 0
 
-        return result
+        if len(q_foods) != 0:
+            q_foods = min(q_foods)
+        else:
+            q_foods = 0
+
+        dist_overall = p_foods + q_foods
+
+        return dist_overall * result, p_foods, q_foods
 
     @staticmethod
     def EuclideanDist(p1, p2):
@@ -121,59 +142,80 @@ class Astar(Thread):
         return np.abs(p1.x - p2.x) + np.abs(p1.y - p2.y)
 
 
-    # Adjacents of current state -> State
+    # Adherents of current state -> State
     def getAdjacents(self, curState):
         res = deque([])
         p = curState.p
         q = curState.q
-
         # Possible adjacents for each agent
         p_adj = self.getAdjacentsCell(p)
         q_adj = self.getAdjacentsCell(q)
 
-        # Create states by combining adjacents
-        # each adjacent consists of a cell and a dir:
-        for i in p_adj:
-            for j in q_adj:
-                p_dir, q_dir = i['dir'], j['dir']
-                p_cell, q_cell = i['cell'], j['cell']
-                if p_dir != Direction.NO and q_dir != Direction.NO:
+        # Q remains in its location, P must choose between its neighbors
+        if q_adj.get(Direction.NO) is not None:
+            q_dir = Direction.NO
+            for p_dir in p_adj:
+                if p_dir == Direction.NO:
                     continue
-                if q_cell.getType() == '1' and q_cell.getKey() not in curState.foods:
-                    continue
+                p_cell = p_adj[p_dir]
+                q_cell = q_adj[Direction.NO]
+
+                # Food type 2 is poison for 'P'
+                # It should be ignored, if it is remained.
                 if p_cell.getType() == '2' and p_cell.getKey() not in curState.foods:
                     continue
+
                 score = 0
                 unseen_foods = deque([])
-                if p_cell != q_cell:
+                if p_cell.getKey() != q_cell.getKey():
                     if p_cell.getKey() not in curState.foods and (p_cell.getType() == '1' or p_cell.getType() == '3'):
                         unseen_foods.append(p_cell.getKey())
                         score += 1
+
+                    res.append(State(p_cell, q_cell,
+                                     p_dir, q_dir,
+                                     curState.result - score,
+                                     curState,
+                                     curState.depth + 1,
+                                     curState.foods + unseen_foods))
+
+        # P remains in its location, Q must choose between its neighbors
+        if p_adj.get(Direction.NO) is not None:
+            for q_dir in q_adj:
+                if q_dir == Direction.NO:
+                    continue
+                q_cell = q_adj[q_dir]
+                p_cell = p_adj[Direction.NO]
+
+                # Food type 1 is poison for 'Q'
+                if q_cell.getType() == '1' and q_cell.getKey() not in curState.foods:
+                    continue
+
+                score = 0
+                unseen_foods = deque([])
+                if p_cell.getKey() != q_cell.getKey():
                     if q_cell.getKey() not in curState.foods and (q_cell.getType() == '2' or q_cell.getType() == '3'):
                         unseen_foods.append(q_cell.getKey())
                         score += 1
                     # p, q, p_action, q_action, res, parent, depth, foods=None):
                     res.append(State(p_cell, q_cell,
-                                       p_dir, q_dir,
-                                       curState.result - score,
-                                       curState,
-                                       curState.depth + 1,
-                                       curState.foods + unseen_foods))
-                else:
-                    continue
+                                     Direction.NO, q_dir,
+                                     curState.result - score,
+                                     curState,
+                                     curState.depth + 1,
+                                     curState.foods + unseen_foods))
+
         return res
 
 
     # Adjacents of current cell -> Cell
     def getAdjacentsCell(self, curCell):
-        res = []
+        res = {}
         for d in Direction:
             nextCell = self.getNextCell(curCell, d)
-            if nextCell is None:
+            if nextCell.getType() == '%' or nextCell is None:
                 continue
-            if nextCell.getType() == '%':
-                continue
-            res.append({'cell': nextCell, 'dir': d})
+            res[d] = nextCell
         return res
 
 
@@ -207,7 +249,8 @@ class Astar(Thread):
                 return None
 
 
-    # Finding optimal path by traversing over parents of target
+
+
     def getPath(self):
         result = []
         parent = self.target
@@ -219,28 +262,29 @@ class Astar(Thread):
         self.path = result
         print('Path length:', len(self.path))
 
+    def createInitState(self, frontier):
+        p = self.map.getCell(self.map.p)
+        q = self.map.getCell(self.map.q)
 
-    # This function will be deprecated in final version
+        frontier.append(State(p, q, None, None, len(self.map), None, 0))
+        self.startPoint = frontier[0]
+
+
     def showResult(self):
         for i in range(len(self.path)):
             if i == 0:
                 continue
+            # print()
+            # print(self.path[i].pfood)
+            # print(self.path[i].qfood)
+            # print(self.path[i].h_val)
             p_old, q_old = self.path[i - 1].p, self.path[i - 1].q
             p_new, q_new = self.path[i].p, self.path[i].q
             p_old.changeType(' ')
             q_old.changeType(' ')
             p_new.changeType('P')
             q_new.changeType('Q')
-            time.sleep(0.05)
-
-
-    # Initiating very first state of the problem
-    def createInitState(self, frontier):
-        p = self.map.getCell(self.map.p)
-        q = self.map.getCell(self.map.q)
-        frontier.append(State(p, q, None, None, len(self.map), None, 0))
-        frontier[0].f_val = self.heuristic(frontier[0])
-        self.startPoint = frontier[0]
+            time.sleep(0.2)
 
     def show_performance(self, _time):
         print(tabulate([['Nodes expanded', self.nodes_expanded],

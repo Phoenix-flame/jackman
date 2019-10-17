@@ -24,6 +24,7 @@ class BFS(Thread):
         self.max_fringe_size = 0
         self.search_depth = 0
         self.max_search_depth = 0
+        self.time = 0
 
 
     def run(self):
@@ -35,15 +36,11 @@ class BFS(Thread):
         while frontier.__len__():
             curNode = frontier.popleft()
             visited.add(curNode)
-            # print(curNode.foods)
-            # self.totalStates.append(curNode)
-            # print(curNode.result)
+
             if curNode.result == 0:
-                print("Okkkkkkkkkkkkkkkkkk")
                 self.target = curNode
                 self.search_depth = curNode.depth
                 break
-
 
             # DON'T touch this
             children = self.getAdjacents(curNode)
@@ -66,7 +63,7 @@ class BFS(Thread):
         if self.target:
             self.getPath()
             self.show_performance(time.time() - tic)
-            self.showResult()
+            ##self.showResult()
         else:
             print("There is no path.")
 
@@ -188,7 +185,7 @@ class BFS(Thread):
             result.append(parent)
         result.reverse()
         self.path = result
-        print('Path length:', len(self.path))
+        # print('Path length:', len(self.path))
 
     def createInitState(self, frontier):
         p = self.map.getCell(self.map.p)
@@ -211,6 +208,7 @@ class BFS(Thread):
             time.sleep(0.2)
 
     def show_performance(self, _time):
+        self.time = _time
         print(tabulate([['Nodes expanded', self.nodes_expanded],
                         ['Max search depth', self.max_search_depth],
                         ['Search depth', self.search_depth],

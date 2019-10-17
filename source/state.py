@@ -13,14 +13,13 @@ class State:
         self.f_val = 0
         self.g_val = 0
         self.h_val = 0
+        self.p_food = []
+        self.q_food = []
 
     def __eq__(self, other):
-        return ((self.p.getKey() == other.p.getKey()) and \
-                (self.q.getKey() == other.q.getKey()) and \
-                (self.foods == other.foods))  # or \
-               # ((self.q.getKey() == other.p.getKey()) and \
-               #  (self.p.getKey() == other.q.getKey()) and \
-               #  (self.result == other.result))
+        return ((self.p.getKey() == other.p.getKey()) and
+                (self.q.getKey() == other.q.getKey()) and
+                (self.foods == other.foods)) and (self.depth == other.depth)
 
     def __str__(self):
         return "[" + str(self.p) + ", " + str(self.q) + "]" + " -> " \
@@ -31,5 +30,5 @@ class State:
     def __hash__(self):
         tmp = ''
         for i in self.foods:
-            tmp += str(i)
-        return hash(self.p.getKey()) ^ hash(self.q.getKey()) ^ hash(tmp)
+            tmp += "[" + str(i) + "]"
+        return hash(self.p.getKey()) ^ hash(self.q.getKey()) ^ hash(tmp) ^ hash(self.depth)

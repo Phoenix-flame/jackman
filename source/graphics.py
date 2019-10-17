@@ -26,19 +26,19 @@ class Graphics:
         self.screen = screen
         self.cols = size['col']
         self.rows = size['row']
-        self.size = 30
+        self.size = 40
         self.screen = pg.display.set_mode([self.cols*self.size + 5, self.rows*self.size + 5], pg.RESIZABLE)
 
     def drawCells(self, _map):
         pg.font.init()
         _cell_offset = 5
-        myfont = pg.font.SysFont('FreeSans', 10)
+        myfont = pg.font.SysFont('FreeSans', 20)
         for cell in _map.map.values():
             _x1 = (self.size - 0) * cell.x
             _y1 = (self.size - 0) * cell.y
 
-            _text_offset_x = 20
-            _text_offset_y = 13
+            _text_offset_x = 18
+            _text_offset_y = 11
 
             pg.draw.rect(self.screen, map_state[cell.getType()], (_x1 + _cell_offset, _y1 + _cell_offset,
                                                                   self.size - _cell_offset, self.size - _cell_offset))

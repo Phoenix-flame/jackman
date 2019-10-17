@@ -6,8 +6,6 @@ from tabulate import tabulate
 from source.state import *
 from source.direction import *
 
-
-
 class IDS(Thread):
     def __init__(self, _map):
         super().__init__()
@@ -28,7 +26,7 @@ class IDS(Thread):
     def run(self):
         tic = time.time()
 
-        if self._ids(1000):
+        if self._ids(35):
             self.getPath()
             self.show_performance(time.time() - tic)
             self.showResult()
@@ -40,63 +38,29 @@ class IDS(Thread):
 
     def _ids(self, maxDepth):
         for i in range(maxDepth):
-            explored = set()
-            stack = deque([])
-            self.createInitState(stack)
-
-            while stack:
-                node = stack.pop()
-                explored.add(node)
-
-                if node.result == 0:
-                    self.target = node
-                    return stack
-
-                if node.depth >= i:
-                    continue
-
-                neighbors = reversed(self.getAdjacents(node))
-
-                for neighbor in neighbors:
-                    if neighbor not in explored:
-                        stack.append(neighbor)
-                        explored.add(neighbor)
-
-                        if neighbor.depth > self.max_search_depth:
-                            self.max_search_depth += 1
-
-                if len(stack) > self.max_fringe_size:
-                    self.max_fringe_size = len(stack)
-
-
-
-            #
-            #
-            # if self._dfs(frontier[0], visited, frontier, i):
-            #     print("Done")
-            #     return True
-        return False
-
-
-    def _dfs(self, curNode, visited, frontier, maxDepth):
-        if curNode.result == 0:
-            self.target = curNode
-            return True
-
-        if curNode.depth >= maxDepth:
-            # print("There is no path in depth:", maxDepth)
-            return False
-        # visited.add(curNode)
-
-        children = self.getAdjacents(curNode)
-
-        for child in children:
-            # if child not in visited:
-            if self._dfs(child, visited, frontier, maxDepth):
+            visited = set()
+            self.startPoint = self.createInitState()
+            visited.add(self.startPoint)
+            self.resetPerformanceMeasures()
+            if self._dfs(self.startPoint, visited, i):
                 return True
         return False
 
-    # Adherents of current state -> State
+    def _dfs(self, curNode, visited, depth):
+        if curNode.result == 0:
+            self.target = curNode
+            return True
+        if curNode.depth > depth:
+            return False
+        visited.add(curNode)
+        for i in self.getAdjacents(curNode):
+            if i not in visited:
+                if self._dfs(i, visited, depth):
+                    return True
+        return False
+
+
+    # Adjacents of current state -> State
     def getAdjacents(self, curState):
         res = deque([])
         p = curState.p
@@ -216,19 +180,18 @@ class IDS(Thread):
         self.path = result
         print('Path length:', len(self.path))
 
-    def createInitState(self, frontier):
+    def createInitState(self):
         p = self.map.getCell(self.map.p)
         q = self.map.getCell(self.map.q)
 
-        frontier.append(State(p, q, None, None, len(self.map), None, 0))
-        self.startPoint = frontier[0]
+        return State(p, q, None, None, len(self.map), None, 0)
+
 
 
     def showResult(self):
         for i in range(len(self.path)):
             if i == 0:
                 continue
-            # print(self.path[i])
             p_old, q_old = self.path[i - 1].p, self.path[i - 1].q
             p_new, q_new = self.path[i].p, self.path[i].q
             p_old.changeType(' ')
@@ -237,9 +200,21 @@ class IDS(Thread):
             q_new.changeType('Q')
             time.sleep(0.2)
 
+    def resetPerformanceMeasures(self):
+        self.cost_to_path = 0
+        self.nodes_expanded = 0
+        self.fringe_size = 0
+        self.max_fringe_size = 0
+        self.search_depth = 0
+        self.max_search_depth = 0
+
     def show_performance(self, _time):
         print(tabulate([['Nodes expanded', self.nodes_expanded],
                         ['Max search depth', self.max_search_depth],
                         ['Search depth', self.search_depth],
                         ['Max fringe size', self.max_fringe_size],
                         ['Time', _time]], headers=['Parameter', 'Value']))
+
+
+
+
