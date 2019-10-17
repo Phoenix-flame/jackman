@@ -25,7 +25,7 @@ class Astar(Thread):
         self.max_fringe_size = 0
         self.search_depth = 0
         self.max_search_depth = 0
-
+        self.time = 0
 
     def run(self):
         print("Let's rock")
@@ -287,6 +287,7 @@ class Astar(Thread):
             time.sleep(0.2)
 
     def show_performance(self, _time):
+        self.time = _time
         print(tabulate([['Nodes expanded', self.nodes_expanded],
                         ['Max search depth', self.max_search_depth],
                         ['Search depth', self.search_depth],
