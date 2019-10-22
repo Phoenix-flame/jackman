@@ -4,6 +4,7 @@
 from threading import Thread
 import time
 from tabulate import tabulate
+
 from source.state import *
 from source.direction import *
 
@@ -25,6 +26,8 @@ class BFS(Thread):
         self.search_depth = 0
         self.max_search_depth = 0
         self.time = 0
+        self.differentStates = 0
+        self.totalStates = 0
 
     def run(self):
         tic = time.time()
@@ -35,7 +38,7 @@ class BFS(Thread):
         while frontier.__len__():
             curNode = frontier.popleft()
             visited.add(curNode)
-            print(curNode.depth)
+            # print(curNode.depth)
             if curNode.result == 0:
                 self.target = curNode
                 self.search_depth = curNode.depth
@@ -46,8 +49,10 @@ class BFS(Thread):
             self.nodes_expanded += 1
 
             for child in children:
+                self.totalStates += 1
                 if child not in visited:
                     child.parent = curNode
+                    self.differentStates += 1
                     frontier.append(child)
                     visited.add(child)
 
@@ -121,7 +126,6 @@ class BFS(Thread):
                     if q_cell.getKey() not in curState.foods and (q_cell.getType() == '2' or q_cell.getType() == '3'):
                         unseen_foods.append(q_cell.getKey())
                         score += 1
-                    # p, q, p_action, q_action, res, parent, depth, foods=None):
                     res.append(StateB(p_cell, q_cell,
                                       Direction.NO, q_dir,
                                       curState.result - score,
@@ -179,7 +183,6 @@ class BFS(Thread):
             result.append(parent)
         result.reverse()
         self.path = result
-        # print('Path length:', len(self.path))
 
     def createInitState(self, frontier):
         p = self.map.getCell(self.map.p)
@@ -206,4 +209,6 @@ class BFS(Thread):
                         ['Max search depth', self.max_search_depth],
                         ['Search depth', self.search_depth],
                         ['Max fringe size', self.max_fringe_size],
+                        ['Total states', self.totalStates],
+                        ['Different states', self.differentStates],
                         ['Time', _time]], headers=['Parameter', 'Value']))

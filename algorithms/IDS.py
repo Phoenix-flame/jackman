@@ -22,6 +22,8 @@ class IDS(Thread):
         self.search_depth = 0
         self.max_search_depth = 0
         self.time = 0
+        self.differentStates = 0
+        self.totalStates = 0
 
 
     def run(self):
@@ -57,9 +59,11 @@ class IDS(Thread):
         visited.add(curNode)
         self.nodes_expanded += 1
         for neighbor in self.getAdjacents(curNode):
+            self.totalStates += 1
             if neighbor.depth > self.max_search_depth:
                 self.max_search_depth = neighbor.depth
             if neighbor not in visited:
+                self.differentStates += 1
                 if self._dfs(neighbor, visited, depth):
                     return True
         return False
@@ -120,7 +124,6 @@ class IDS(Thread):
                     if q_cell.getKey() not in curState.foods and (q_cell.getType() == '2' or q_cell.getType() == '3'):
                         unseen_foods.append(q_cell.getKey())
                         score += 1
-                    # p, q, p_action, q_action, res, parent, depth, foods=None):
                     res.append(State(p_cell, q_cell,
                                      Direction.NO, q_dir,
                                      curState.result - score,
@@ -172,8 +175,6 @@ class IDS(Thread):
                 return None
 
 
-
-
     def getPath(self):
         result = []
         parent = self.target
@@ -212,6 +213,8 @@ class IDS(Thread):
         self.max_fringe_size = 0
         self.search_depth = 0
         self.max_search_depth = 0
+        self.totalStates = 0
+        self.differentStates = 0
 
     def show_performance(self, _time):
         self.time = _time
@@ -219,8 +222,8 @@ class IDS(Thread):
                         ['Max search depth', self.max_search_depth],
                         ['Search depth', self.search_depth],
                         ['Max fringe size', self.max_fringe_size],
+                        ['Total states', self.totalStates],
+                        ['Different states', self.differentStates],
                         ['Time', _time]], headers=['Parameter', 'Value']))
-
-
 
 

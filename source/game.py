@@ -9,6 +9,7 @@ class Game(Thread):
     def __init__(self, _screen, ui=False):
         super().__init__()
         self.map = Map("testcases/test1")
+        # self.map = Map("my_testcases/my_test9")
         self.ui = ui
         self.graphics = None
         if ui:
